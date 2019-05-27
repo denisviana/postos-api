@@ -7,20 +7,24 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Postos.Data;
+using Postos.Services;
 
 namespace Postos
 {
     public class Program
     {
 
-        const String URL = "http://www.anp.gov.br/arquivos/dadosabertos/precos/precos-semanais_ultimas-4-semanas_gasolina-etanol.csv";
-
         public static void Main(string[] args)
         {
 
-            var wc = new System.Net.WebClient();
-            Console.WriteLine("Download file...");
-            wc.DownloadFile(URL, @"c:\temp\myfile.csv");
+            DataManager.getInstance().DownloadFileAsync();
+
+            Scheduler.IntervalInMinutes(16, 9, 10,
+            () => {
+                Console.WriteLine("Scheduling job...");
+                
+            });
 
             CreateWebHostBuilder(args).Build().Run();
                   

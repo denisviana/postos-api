@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 namespace Postos.DAO
 {
-    public class PostoDAO : BaseDAO
+    public class BaseDAO
     {
+        
     }
 }
