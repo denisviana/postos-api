@@ -7,5 +7,7 @@ namespace Postos.Controllers
 {
     public class PostoController
     {
+
+
     }
 }
