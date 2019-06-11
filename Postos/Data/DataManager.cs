@@ -11,26 +11,19 @@ using System.Threading.Tasks;
 
 namespace Postos.Data
 {
-    public class DataManager
+    public class DataManager : IDataManager
     {
 
         private const String URL = "http://www.anp.gov.br/arquivos/dadosabertos/precos/precos-semanais_ultimas-4-semanas_gasolina-etanol.csv";
-        private const String PATH = @"c:\temp\postos.txt";
-        private static PostoDAO postoDAO;
+        private const String PATH = @"wwwroot\csv\postos.txt";
+        private readonly IPostoDAO _postoDAO;
         private static PostoFacade postoFacade;
-
-        private static DataManager instance;
-
-        private DataManager() { }
-
-        public static DataManager getInstance()
+        public DataManager(IPostoDAO postoDAO)
         {
-            if (postoDAO == null) postoDAO = new PostoDAO();
-            if (postoFacade == null) postoFacade = new PostoFacade();
-            if (instance == null) instance = new DataManager();
-
-            return instance;
+            _postoDAO = postoDAO;
+            postoFacade = new PostoFacade();
         }
+
 
         public async Task DownloadFileAsync()
         {
@@ -38,18 +31,52 @@ namespace Postos.Data
             HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
 
             StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream());
-            string results = streamReader.ReadToEnd().Replace("\t",",");
+
+            string firstLine = streamReader.ReadLine();
+            string firstLineWithouSpecialCharacters = removerAcentos(firstLine)
+                .Replace("-","")
+                .Replace(" ","")
+                .Replace("\t", ",");
+
+            string results = streamReader.ReadToEnd()
+                .Replace("\"","")
+                .Replace(",",".")
+                .Replace("\t",",")
+                .Replace(" / ","/");
+
             streamReader.Close();
 
-            treatFile(results);
+            string file = new StringBuilder()
+                .AppendLine(firstLineWithouSpecialCharacters)
+                .Append(results)
+                .ToString()
+                .Replace("\r","");
+
+            File.WriteAllText(PATH, file);
+
+            treatFile(PATH);
         }
 
         private void treatFile(String path)
         {
-
-            String json = postoFacade.CSVtoJson(path);
+            var json = postoFacade.CSVtoJson(path);
             List<Posto> postos = postoFacade.JsonParse(json);
+            var filtered = postos.Where(p => p.Produto.Equals("GASOLINA")).ToList();
+            _postoDAO.SavePostoList(filtered);
 
+            Console.Write(postos);
+        }
+
+        public static string removerAcentos(string texto)
+        {
+            string comAcentos = "ÄÅÁÂÀÃäáâàãÉÊËÈéêëèÍÎÏÌíîïìÖÓÔÒÕöóôòõÜÚÛüúûùÇç";
+            string semAcentos = "AAAAAAaaaaaEEEEeeeeIIIIiiiiOOOOOoooooUUUuuuuCc";
+
+            for (int i = 0; i < comAcentos.Length; i++)
+            {
+                texto = texto.Replace(comAcentos[i].ToString(), semAcentos[i].ToString());
+            }
+            return texto;
         }
 
     }

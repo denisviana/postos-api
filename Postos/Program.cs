@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Postos.Data;
 using Postos.Services;
@@ -18,15 +19,30 @@ namespace Postos
         public static void Main(string[] args)
         {
 
-            DataManager.getInstance().DownloadFileAsync();
+            var host = CreateWebHostBuilder(args).Build();
+            IDataManager serviceContext;
 
-            Scheduler.IntervalInMinutes(16, 9, 10,
-            () => {
-                Console.WriteLine("Scheduling job...");
-                
-            });
+            using (var serviceScope = host.Services.CreateScope())
+            {
+                var services = serviceScope.ServiceProvider;
 
-            CreateWebHostBuilder(args).Build().Run();
+                try
+                {
+                   serviceContext = services.GetRequiredService<IDataManager>();
+                   serviceContext.DownloadFileAsync();
+
+                    Scheduler.IntervalInMinutes(01, 35, 5,() => {
+                        Console.WriteLine("Scheduling job...");
+                    });
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred.");
+                }
+            }
+
+            host.Run();
                   
         }
 

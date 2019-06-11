@@ -20,27 +20,26 @@ namespace Postos.Facade
 
         public String CSVtoJson(String path)
         {
-            //var csv = new List<string[]>();
-            //var lines = File.ReadAllLines(path);
+            var csv = new List<string[]>();
+            var lines = File.ReadAllLines(@path);
 
-            try
+            foreach (string line in lines)
+                csv.Add(line.Split(','));
+
+            var properties = lines[0].Split(',');
+
+            var listObjResult = new List<Dictionary<string, string>>();
+
+            for (int i = 1; i < lines.Length; i++)
             {
+                var objResult = new Dictionary<string, string>();
+                for (int j = 0; j < properties.Length; j++)
+                    objResult.Add(properties[j], csv[i][j]);
 
-                System.IO.File.WriteAllText(@"c:\temp\postos.txt", path);
-
-                StringBuilder sb = new StringBuilder();
-                foreach (dynamic e in new ChoCSVReader(@"c:\temp\postos.txt").WithFirstLineHeader())
-                    Console.WriteLine(e.Bandeira);
-               
-
-                //Console.WriteLine(sb.ToString());
-                return sb.ToString();
+                listObjResult.Add(objResult);
             }
-            catch(Exception e)
-            {
-                Console.Write(e);
-                return null;
-            }
+
+            return JsonConvert.SerializeObject(listObjResult);
         }
     }
 }

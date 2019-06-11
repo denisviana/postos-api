@@ -7,7 +7,6 @@ namespace Postos.Model
 {
     public class EntidadeBase
     {
-        String Uid { get; set; }
-        String Nome { get; set; }
+       
     }
 }

@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.FileProviders;
+using Postos.Context;
+using Postos.DAO;
+using Postos.Data;
+using System.IO;
 
 namespace Postos
 {
@@ -25,7 +24,11 @@ namespace Postos
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<postos_dbContext>(options => options.UseSqlServer("Server=tcp:sv-postos.database.windows.net,1433;Initial Catalog=postos_db;Persist Security Info=False;User ID=up2019;Password=Nisasta12*;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=180;"));
+            services.AddScoped<IPostoDAO, PostoDAO>();
+            services.AddScoped<IDataManager,DataManager>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,6 +42,20 @@ namespace Postos
             {
                 app.UseHsts();
             }
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+            Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "csv")),
+                RequestPath = "/CSV"
+            });
+
+            app.UseDirectoryBrowser(new DirectoryBrowserOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "csv")),
+                RequestPath = "/CSV"
+            });
 
             app.UseHttpsRedirection();
             app.UseMvc();

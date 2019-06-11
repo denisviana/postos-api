@@ -1,24 +1,31 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Postos.Model
 {
+    [Table("Posto")]
     public class Posto : EntidadeBase
     {
-        String PostoId { get; set; }
-        String Revenda { get; set; }
-        [JsonProperty(PropertyName = "Estado - Sigla")]
-        String Estado { get; set; }
-        [JsonProperty(PropertyName = "Município")]
-        String Municipio { get; set; }
-        String Produto { get; set; }
-        String Bandeira { get; set; }
-        [JsonProperty(PropertyName = "Valor de Venda")]
-        double ValorVenda { get; set; }
-        [JsonProperty(PropertyName = "Valor de Compra")]
-        double ValorCompra { get; set; }
+        [Key]
+        [JsonProperty(PropertyName = "InstalacaoCodigo")]
+        public string PostoId { get; set; }
+        [JsonProperty(PropertyName = "Revenda")]
+        public string Revenda { get; set; }
+        [JsonProperty(PropertyName = "EstadoSigla")]
+        public string Estado { get; set; }
+        [JsonProperty(PropertyName = "Municipio")]
+        public string Municipio { get; set; }
+        public string Produto { get; set; }
+        [JsonProperty(PropertyName = "Bandeira")]
+        public string Bandeira { get; set; }
+        [JsonProperty(PropertyName = "ValordeVenda")]
+        public string ValordeVenda { get; set; }
+        [JsonProperty(PropertyName = "ValordeCompra")]
+        public string ValordeCompra { get; set; }
     }
 }
