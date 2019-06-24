@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
 using Postos.Context;
 using Postos.DAO;
 using Postos.Data;
+using Postos.Util;
 using System.IO;
 
 namespace Postos
@@ -19,12 +21,26 @@ namespace Postos
             Configuration = configuration;
         }
 
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<postos_dbContext>(options => options.UseSqlServer("Server=tcp:sv-postos.database.windows.net,1433;Initial Catalog=postos_db;Persist Security Info=False;User ID=up2019;Password=Nisasta12*;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=180;"));
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(MyAllowSpecificOrigins,
+                builder =>
+                {
+                    builder.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
+            services.AddDbContextPool<postos_dbContext>(options => options.UseSqlServer("Server=tcp:sv-postos.database.windows.net,1433;Initial Catalog=postos_db;Persist Security Info=False;User ID=up2019;Password=Nisasta12*;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=180;"));
             services.AddScoped<IPostoDAO, PostoDAO>();
             services.AddScoped<IDataManager,DataManager>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
@@ -57,6 +73,8 @@ namespace Postos
                 RequestPath = "/CSV"
             });
 
+            app.UseCorsMiddleware();
+            //app.UseCors();
             app.UseHttpsRedirection();
             app.UseMvc();
         }

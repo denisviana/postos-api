@@ -11,7 +11,11 @@ namespace Postos.DAO
         void SavePosto(Posto posto);
         void SavePostoList(List<Posto> postos);
         void UpdatePosto(Posto posto);
-        List<Posto> GetPostos();
+        List<Posto> GetPostosMaisCaros();
+        List<Posto> GetPostosMaisBaratos();
         Posto GetPostoById(String id);
+        Posto PostoMaisCaro();
+        Posto PostoMaisBarato();
+
     }
 }

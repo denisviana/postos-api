@@ -9,11 +9,13 @@ using System.Threading.Tasks;
 
 namespace Postos.DAO
 {
-    public class PostoDAO : BaseDAO, IPostoDAO
+    public class PostoDAO : IPostoDAO
     {
+        protected readonly postos_dbContext _context;
 
-        public PostoDAO(postos_dbContext context) : base(context)
+        public PostoDAO(postos_dbContext context)
         {
+            this._context = context;
         }
 
         public Posto GetPostoById(string id)
@@ -21,37 +23,75 @@ namespace Postos.DAO
             return _context.Posto.Where(p => p.PostoId.Equals(id)).FirstOrDefault();
         }
 
-        public List<Posto> GetPostos()
+        public async Task<Posto> GetPostoByIdAsync(string id)
         {
-            return _context.Posto.ToList();
+            return await _context.Posto.Where(p => p.PostoId.Equals(id)).FirstOrDefaultAsync();
+        }
+
+        public List<Posto> GetPostosMaisCaros()
+        {
+            return _context.Posto.OrderByDescending(p => p.ValordeVenda).Skip(1).Take(20).ToList();
+        }
+
+        public List<Posto> GetPostosMaisBaratos()
+        {
+            return _context.Posto.OrderBy(p => p.ValordeVenda).Skip(1).Take(20).ToList();
+        }
+
+        public Posto PostoMaisCaro()
+        {
+            return _context
+                .Posto
+                .OrderByDescending(p => p.ValordeVenda)
+                .First();
+        }
+
+        public Posto PostoMaisBarato()
+        {
+            return _context
+               .Posto
+               .OrderBy(p => p.ValordeVenda)
+               .First();
         }
 
         public void SavePostoList(List<Posto> postos)
         {
             Console.WriteLine("Saving data...");
+            var counter = 0;
 
-            foreach (Posto posto in postos)
+            Action action = () =>
             {
-                if (GetPostoById(posto.PostoId) != null)
-                    UpdatePosto(posto);
-                else
-                    SavePosto(posto);
-            }
+                foreach (Posto posto in postos)
+                {
 
-            _context.SaveChangesAsync();
+                    if (GetPostoById(posto.PostoId) == null) {
+                        _context.Add(posto);
+                        _context.SaveChanges();
+                        Console.WriteLine("Saved " + posto.Revenda);
+                        counter++;
+                    }             
 
-            Console.WriteLine("Save data successfully");
+                }
+
+                Console.WriteLine("Save data successfully: " + counter + " items");
+
+            };
+
+            action.Invoke();
+
         }
 
         public void SavePosto(Posto posto)
         {
             _context.Posto.Add(posto);
+            _context.SaveChangesAsync();
         }
 
         public void UpdatePosto(Posto posto)
         {
             _context.Entry(posto).State = EntityState.Modified;
             _context.Posto.Update(posto);
+            _context.SaveChangesAsync();
         }
     }
 }

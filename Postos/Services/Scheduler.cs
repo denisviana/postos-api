@@ -10,12 +10,12 @@ namespace Postos.Services
 
         public static void IntervalInMinutes(int hour, int min, double interval, Action task)
         {
-            interval = interval / 60;
+            interval /= 60;
             SchedulerService.Instance.ScheduleTask(hour, min, interval, task);
         }
         public static void IntervalInDays(int hour, int min, double interval, Action task)
         {
-            interval = interval * 24;
+            interval *= 24;
             SchedulerService.Instance.ScheduleTask(hour, min, interval, task);
         }
     }

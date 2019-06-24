@@ -29,7 +29,7 @@ namespace Postos
                 try
                 {
                    serviceContext = services.GetRequiredService<IDataManager>();
-                   serviceContext.DownloadFileAsync();
+                   //serviceContext.DownloadFileAsync();
 
                     Scheduler.IntervalInMinutes(01, 35, 5,() => {
                         Console.WriteLine("Scheduling job...");
